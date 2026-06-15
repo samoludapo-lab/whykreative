@@ -4,7 +4,10 @@ const state = {
   stats: {},
   services: [],
   pipeline: [],
-  toolCatalog: {}
+  toolCatalog: {},
+  connectors: [],
+  costAssumptions: {},
+  currentEstimate: null
 };
 
 const elements = {
@@ -14,6 +17,8 @@ const elements = {
   queueDepth: document.querySelector("#queueDepth"),
   jobList: document.querySelector("#jobList"),
   workflowMap: document.querySelector("#workflowMap"),
+  connectorGrid: document.querySelector("#connectorGrid"),
+  costCard: document.querySelector("#costCard"),
   reviewGrid: document.querySelector("#reviewGrid"),
   serviceList: document.querySelector("#serviceList"),
   projectSelect: document.querySelector("#projectSelect"),
@@ -50,6 +55,10 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function money(value) {
+  return `$${Number(value || 0).toFixed(2)}`;
 }
 
 function renderMetrics() {
@@ -94,6 +103,7 @@ function renderJobs() {
 
     node.querySelector(".job-meta").innerHTML = [
       `Progress ${job.progress}%`,
+      `Est. ${money(job.costEstimate.subtotal)}`,
       job.worker ? `Worker ${job.worker}` : "Waiting for worker",
       job.workflow.characterVoice,
       job.storageKey ? "MP4 stored in R2" : "No final MP4 yet",
@@ -119,6 +129,53 @@ function renderWorkflowMap() {
   `).join("");
 }
 
+function renderConnectors() {
+  elements.connectorGrid.innerHTML = state.connectors.map((connector) => `
+    <article class="connector-card ${connector.connected ? "connected" : ""}">
+      <div>
+        <span class="connector-category">${escapeHtml(connector.category)}</span>
+        <h3>${escapeHtml(connector.name)}</h3>
+        <p>${connector.connected ? `Connected via ${escapeHtml(connector.source)}${connector.last4 ? ` · ${escapeHtml(connector.last4)}` : ""}` : `Set ${escapeHtml(connector.env)}`}</p>
+      </div>
+      <form data-connector="${escapeHtml(connector.id)}">
+        <input name="secret" type="password" placeholder="${escapeHtml(connector.env)}" autocomplete="off" />
+        <div class="connector-actions">
+          <button class="ghost-button" type="submit">${connector.connected ? "Update" : "Connect"}</button>
+          <button class="text-button" type="button" data-disconnect="${escapeHtml(connector.id)}" ${connector.connected ? "" : "disabled"}>Disconnect</button>
+        </div>
+      </form>
+    </article>
+  `).join("");
+}
+
+function renderCostCard() {
+  const estimate = state.currentEstimate;
+  if (!estimate) {
+    elements.costCard.innerHTML = `<p>Choose workflow settings to estimate this run.</p>`;
+    return;
+  }
+
+  elements.costCard.innerHTML = `
+    <div class="cost-total">
+      <span>Estimated total</span>
+      <strong>${money(estimate.subtotal)}</strong>
+      <p>Expected range ${money(estimate.rangeLow)}-${money(estimate.rangeHigh)}</p>
+    </div>
+    <div class="cost-lines">
+      ${estimate.lineItems.map((item) => `
+        <div>
+          <span>
+            <strong>${escapeHtml(item.label)}</strong>
+            <small>${escapeHtml(item.detail)}</small>
+          </span>
+          <b>${money(item.usd)}</b>
+        </div>
+      `).join("")}
+    </div>
+    <p class="cost-note">${escapeHtml(estimate.assumptions.note)}</p>
+  `;
+}
+
 function renderReview() {
   const reviewJobs = state.jobs.filter((job) => ["awaiting_review", "approved", "uploading_to_tiktok", "draft_created"].includes(job.status));
   elements.reviewGrid.innerHTML = reviewJobs.map((job) => `
@@ -127,7 +184,7 @@ function renderReview() {
       <div class="review-body">
         <span class="${statusClass(job.status)}">${escapeHtml(job.statusLabel)}</span>
         <h3>${escapeHtml(job.title)}</h3>
-        <p>${escapeHtml(job.workflow.characterVoice)} via ${escapeHtml(job.workflow.voiceProvider.name)} · ${escapeHtml(job.storageKey || "Final MP4 is being prepared")}</p>
+        <p>${escapeHtml(job.workflow.characterVoice)} via ${escapeHtml(job.workflow.voiceProvider.name)} · est. ${money(job.costEstimate.subtotal)} · ${escapeHtml(job.storageKey || "Final MP4 is being prepared")}</p>
         <button class="ghost-button" type="button" data-approve="${job.id}" ${job.status !== "awaiting_review" ? "disabled" : ""}>
           ${job.status === "awaiting_review" ? "Approve to TikTok draft" : "Approval sent"}
         </button>
@@ -153,6 +210,8 @@ function render() {
   renderProjects();
   renderJobs();
   renderWorkflowMap();
+  renderConnectors();
+  renderCostCard();
   renderReview();
   renderServices();
 }
@@ -169,9 +228,41 @@ async function approveJob(jobId) {
   await api(`/api/jobs/${jobId}/approve`, { method: "POST" });
 }
 
+async function updateEstimate() {
+  const data = Object.fromEntries(new FormData(elements.jobForm));
+  const payload = await api("/api/estimate", {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+  state.currentEstimate = payload.estimate;
+  renderCostCard();
+}
+
+async function connectProvider(form) {
+  const connectorId = form.dataset.connector;
+  const data = Object.fromEntries(new FormData(form));
+  await api(`/api/connectors/${connectorId}`, {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+  form.reset();
+}
+
+async function disconnectProvider(connectorId) {
+  await api(`/api/connectors/${connectorId}`, { method: "DELETE" });
+}
+
 elements.jobForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   await createJob(event.currentTarget);
+});
+
+elements.jobForm.addEventListener("input", () => {
+  updateEstimate().catch(console.error);
+});
+
+elements.jobForm.addEventListener("change", () => {
+  updateEstimate().catch(console.error);
 });
 
 elements.quickJobButton.addEventListener("click", async () => {
@@ -185,9 +276,21 @@ elements.reviewGrid.addEventListener("click", async (event) => {
   await approveJob(button.dataset.approve);
 });
 
+elements.connectorGrid.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await connectProvider(event.target);
+});
+
+elements.connectorGrid.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-disconnect]");
+  if (!button) return;
+  await disconnectProvider(button.dataset.disconnect);
+});
+
 async function boot() {
   const payload = await api("/api/dashboard");
   setState(payload);
+  await updateEstimate();
 
   const events = new EventSource("/api/events");
   events.addEventListener("dashboard", (event) => setState(JSON.parse(event.data)));

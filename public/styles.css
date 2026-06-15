@@ -371,6 +371,69 @@ label {
   gap: 12px;
 }
 
+.connector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.connector-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: #fbfcfb;
+}
+
+.connector-card.connected {
+  border-color: rgba(31, 138, 91, 0.45);
+  background: #f4fbf7;
+}
+
+.connector-category {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  border-radius: 999px;
+  background: #eff3f0;
+  color: var(--muted);
+  padding: 0 8px;
+  font-size: 0.72rem;
+  font-weight: 850;
+  margin-bottom: 10px;
+}
+
+.connector-card p {
+  color: var(--muted);
+  font-size: 0.84rem;
+  margin-bottom: 12px;
+}
+
+.connector-card form {
+  gap: 9px;
+}
+
+.connector-actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.text-button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 800;
+  cursor: pointer;
+  min-height: 40px;
+  padding: 0 4px;
+}
+
+.text-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .review-card {
   overflow: hidden;
 }
@@ -411,6 +474,12 @@ form {
   gap: 13px;
 }
 
+.run-input-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
 label {
   display: grid;
   gap: 7px;
@@ -435,6 +504,60 @@ textarea {
   resize: vertical;
   padding: 10px 11px;
   line-height: 1.4;
+}
+
+.cost-card {
+  display: grid;
+  gap: 14px;
+}
+
+.cost-total {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: #fbfcfb;
+}
+
+.cost-total span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.cost-total strong {
+  display: block;
+  font-size: 2rem;
+  margin: 4px 0;
+}
+
+.cost-total p,
+.cost-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.cost-lines {
+  display: grid;
+  gap: 8px;
+}
+
+.cost-lines div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 8px;
+}
+
+.cost-lines span {
+  display: grid;
+  gap: 3px;
+}
+
+.cost-lines small {
+  color: var(--muted);
+  line-height: 1.25;
 }
 
 .service-list {

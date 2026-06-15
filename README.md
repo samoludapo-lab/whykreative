@@ -26,6 +26,8 @@ http://127.0.0.1:3000
 - Node API server with endpoints for dashboard data, render job creation, and approval.
 - Simulated Redis queue and GPU render worker lifecycle.
 - AI workflow choices for 3D assets, Blender rendering, character voices, AI video inserts, and FFmpeg assembly.
+- Connector cards for Meshy, Tripo, ElevenLabs, Cartesia, Runway, Luma, S3/R2, and TikTok.
+- Per-run cost estimate based on selected providers and run size.
 - Live updates with Server-Sent Events.
 - TikTok draft creation flow after client approval.
 

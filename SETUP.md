@@ -64,6 +64,58 @@ AI video insert: Runway, Luma Dream Machine, or no AI insert
 Final assembly: FFmpeg
 ```
 
+## Connectors
+
+The dashboard includes connector cards for:
+
+```text
+MESHY_API_KEY
+TRIPO_API_KEY
+ELEVENLABS_API_KEY
+CARTESIA_API_KEY
+RUNWAY_API_KEY
+LUMA_API_KEY
+S3_OR_R2_ACCESS_KEY
+TIKTOK_CLIENT_ID
+```
+
+For the local prototype, connector values are kept only in memory and the UI stores a masked last-four indicator. For production, replace this with encrypted secret storage such as Doppler, AWS Secrets Manager, GCP Secret Manager, Infisical, or your cloud provider's managed secrets service.
+
+You can also set keys as environment variables before starting the app:
+
+```bash
+MESHY_API_KEY=... ELEVENLABS_API_KEY=... npm run dev
+```
+
+## Run Cost Estimate
+
+The app estimates each run from these editable inputs:
+
+```text
+Final seconds
+3D asset count
+Voice minutes
+AI insert seconds
+Blender GPU minutes
+Selected providers
+```
+
+The estimate is intentionally approximate. Actual cost depends on your plan, selected model, retries, output resolution, API access terms, GPU provider, and storage/egress usage.
+
+Current default assumptions in `server.js`:
+
+```text
+Meshy: estimated $0.02 per credit, 30 credits per asset
+Tripo: estimated $0.60 per asset
+Blender GPU: estimated $0.08 per GPU minute
+ElevenLabs: estimated $0.18 per voice minute
+Cartesia: estimated $0.03 per voice minute
+Runway: estimated $0.048 per generated second
+Luma: estimated $0.01 per credit, 20 credits per second for 720p-style generation
+FFmpeg: estimated $0.02 per run
+S3/R2: estimated $0.01 per run
+```
+
 Each job moves through this production timeline:
 
 ```text
