@@ -64,6 +64,44 @@ AI video insert: Runway, Luma Dream Machine, or no AI insert
 Final assembly: FFmpeg
 ```
 
+## Scene Creation Page
+
+The Scene page creates the structured storyboard JSON that a Blender worker can consume. The creator can specify:
+
+```text
+Core text prompt
+Primary subject
+Meshy asset prompt
+Background/world prompt
+Visual style and mood
+Scene count, format, resolution, FPS
+Blender scene template
+Camera move and lens
+Lighting setup, atmosphere, material style
+Subject motion, background motion, transitions
+Render engine, samples, color management
+Voice script, voice direction, CTA line
+Caption style, music prompt, negative prompt
+```
+
+The storyboard JSON includes:
+
+```text
+video metadata
+creative direction
+asset instructions
+Blender scene/camera/lighting/render instructions
+per-scene timing and animation notes
+voice instructions
+FFmpeg assembly settings
+```
+
+The preview endpoint is:
+
+```text
+POST /api/storyboard
+```
+
 ## Connectors
 
 The dashboard includes connector cards for:

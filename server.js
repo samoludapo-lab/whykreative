@@ -71,6 +71,22 @@ const characterPresets = {
   duo: "Two-character dialogue"
 };
 
+const stylePresets = {
+  cinematic_product: "Cinematic product reveal",
+  futuristic_studio: "Futuristic studio",
+  luxury_minimal: "Luxury minimal",
+  playful_social: "Playful social ad",
+  warm_lifestyle: "Warm lifestyle scene"
+};
+
+const sceneMoodPresets = {
+  premium: "Premium and polished",
+  energetic: "Energetic and fast",
+  calm: "Calm and elegant",
+  dramatic: "Dramatic reveal",
+  playful: "Playful and bright"
+};
+
 const connectorDefinitions = [
   { id: "meshy", name: "Meshy", env: "MESHY_API_KEY", category: "3D assets", docs: "https://docs.meshy.ai/en/" },
   { id: "tripo", name: "Tripo", env: "TRIPO_API_KEY", category: "3D assets", docs: "https://www.tripo3d.ai/" },
@@ -128,12 +144,136 @@ function createWorkflow(input = {}) {
     characterVoice,
     brief: input.brief?.trim() || "Create a 9:16 TikTok-ready product video with voiceover.",
     spec: normalizeRunSpec(input),
+    storyboard: createStoryboard(input, { assetProvider, sceneEngine, voiceProvider, videoProvider, characterVoice }),
     stages: statusOrder.map((status) => ({
       status,
       label: statusLabels[status],
       tool: workflowToolLabel(status, { assetProvider, sceneEngine, voiceProvider, videoProvider })
     }))
   };
+}
+
+function createStoryboard(input = {}, workflow) {
+  const spec = normalizeRunSpec(input);
+  const sceneCount = clampNumber(input.sceneCount, 1, 6, 3);
+  const secondsPerScene = Math.max(2, Math.round(spec.durationSeconds / sceneCount));
+  const title = input.title?.trim() || "Untitled render";
+  const primarySubject = input.primarySubject?.trim() || "hero product";
+  const backgroundPrompt = input.backgroundPrompt?.trim() || "premium studio background with depth, reflections, and subtle atmosphere";
+  const assetPrompt = input.assetPrompt?.trim() || `${primarySubject}, production-ready 3D model, clean topology, realistic materials`;
+  const visualStyle = stylePresets[input.visualStyle] || stylePresets.cinematic_product;
+  const mood = sceneMoodPresets[input.sceneMood] || sceneMoodPresets.premium;
+  const voiceText = input.voiceText?.trim() || `Introducing ${primarySubject}. Built to stand out in every scene.`;
+
+  return {
+    video: {
+      title,
+      format: input.format || "9:16",
+      durationSeconds: spec.durationSeconds,
+      fps: clampNumber(input.fps, 24, 60, 30),
+      resolution: input.resolution || "1080x1920",
+      visualStyle,
+      mood,
+      targetPlatform: "TikTok"
+    },
+    creative: {
+      prompt: input.prompt?.trim() || input.brief?.trim() || "Create a polished short 3D social video.",
+      primarySubject,
+      brandWords: splitList(input.brandWords || "premium, clear, memorable"),
+      colorPalette: splitList(input.colorPalette || "deep green, soft white, graphite, accent blue"),
+      backgroundPrompt,
+      negativePrompt: input.negativePrompt?.trim() || "low quality, warped text, broken geometry, flicker, cluttered scene"
+    },
+    assets: [
+      {
+        id: "asset_hero",
+        type: workflow.assetProvider.id === "manual" ? "uploaded_3d" : "generated_3d",
+        provider: workflow.assetProvider.name,
+        prompt: assetPrompt,
+        placement: input.assetPlacement || "center hero object on reflective platform",
+        scale: input.assetScale || "medium hero scale",
+        material: input.materialStyle || "brushed premium material with subtle bevels"
+      }
+    ],
+    blender: {
+      sceneTemplate: input.sceneTemplate || "studio_turntable_reveal",
+      environment: backgroundPrompt,
+      cameraMove: input.cameraMove || "slow dolly-in with orbit reveal",
+      lens: input.cameraLens || "50mm cinematic product lens",
+      lighting: {
+        setup: input.lightingSetup || "large softbox key, rim light, controlled fill, contact shadows",
+        mood,
+        atmosphere: input.atmosphere || "subtle volumetric haze and glossy floor reflections"
+      },
+      animation: {
+        subjectMotion: input.subjectMotion || "slow 360 turntable with gentle scale emphasis on reveal beats",
+        backgroundMotion: input.backgroundMotion || "slow parallax panels and light sweep",
+        transitionStyle: input.transitionStyle || "match cuts with motion blur and clean light wipes"
+      },
+      render: {
+        engine: input.renderEngine || "Cycles",
+        samples: clampNumber(input.samples, 32, 1024, 128),
+        motionBlur: input.motionBlur !== "off",
+        depthOfField: input.depthOfField !== "off",
+        colorManagement: input.colorManagement || "Filmic high contrast look"
+      }
+    },
+    scenes: Array.from({ length: sceneCount }, (_, index) => createScene(index, sceneCount, secondsPerScene, input, workflow, {
+      primarySubject,
+      assetPrompt,
+      backgroundPrompt,
+      voiceText
+    })),
+    voice: {
+      provider: workflow.voiceProvider.name,
+      character: workflow.characterVoice,
+      direction: input.voiceDirection || "confident, warm, creator-friendly, natural pacing",
+      script: voiceText
+    },
+    assembly: {
+      captions: input.captions !== "off",
+      captionStyle: input.captionStyle || "bold lower-third captions with safe margins",
+      music: input.musicPrompt || "upbeat minimal electronic bed",
+      sfx: input.sfxPrompt || "soft whooshes, camera hits, clean reveal accents",
+      export: "mp4_1080x1920"
+    }
+  };
+}
+
+function createScene(index, sceneCount, secondsPerScene, input, workflow, context) {
+  const finalScene = index === sceneCount - 1;
+  const sceneLabels = ["Hook", "Build", "Proof", "Feature", "Close"];
+  return {
+    id: `scene_${String(index + 1).padStart(2, "0")}`,
+    label: sceneLabels[index] || `Beat ${index + 1}`,
+    durationSeconds: finalScene
+      ? Math.max(2, clampNumber(input.durationSeconds, 6, 120, 24) - secondsPerScene * (sceneCount - 1))
+      : secondsPerScene,
+    description: finalScene
+      ? `Final branded reveal of ${context.primarySubject} with clear call-to-action framing`
+      : `${sceneLabels[index] || "Scene"} beat for ${context.primarySubject} in ${context.backgroundPrompt}`,
+    assets: ["asset_hero"],
+    camera: index === 0 ? input.openingCamera || "fast push-in from wide to hero angle" : input.cameraMove || "slow orbit with controlled parallax",
+    lighting: input.lightingSetup || "softbox key, rim light, controlled fill, contact shadows",
+    animation: finalScene ? input.finalAnimation || "hero lockup, logo-safe pause, subtle glow pulse" : input.subjectMotion || "turntable reveal with light sweep",
+    voice: {
+      character: workflow.characterVoice,
+      text: finalScene ? input.ctaText || "Ready to make it yours?" : context.voiceText
+    },
+    captions: input.captions !== "off",
+    blenderNotes: [
+      `Use ${input.materialStyle || "premium reflective material"} on hero asset`,
+      `Keep subject framed in ${input.format || "9:16"} safe area`,
+      `Avoid ${input.negativePrompt || "clutter, broken geometry, flicker"}`
+    ]
+  };
+}
+
+function splitList(value) {
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function workflowToolLabel(status, workflow) {
@@ -413,7 +553,7 @@ function simulateRender(job) {
   const steps = [
     ["scripting", 14, "Script planner created shot list and dialogue beats"],
     ["generating_assets", 27, `${job.workflow.assetProvider.name} prepared 3D assets`],
-    ["building_scene", 43, "Blender Python assembled scene, lights, camera path, and render settings"],
+    ["building_scene", 43, `Blender Python assembled ${job.workflow.storyboard.scenes.length} scenes with ${job.workflow.storyboard.blender.cameraMove}`],
     ["generating_voice", 58, `${job.workflow.voiceProvider.name} generated ${job.workflow.characterVoice} voice audio`],
     ["generating_video", 70, job.workflow.videoProvider.id === "none" ? "AI video insert skipped for pure Blender render" : `${job.workflow.videoProvider.name} generated cinematic insert`],
     ["compositing", 84, "FFmpeg mixed voice, captions, music, and vertical MP4 encode"],
@@ -522,6 +662,11 @@ const server = http.createServer(async (req, res) => {
     if (req.method === "POST" && url.pathname === "/api/estimate") {
       const input = await readRequestJson(req);
       return sendJson(res, 200, { estimate: estimateCost(createWorkflow(input)) });
+    }
+
+    if (req.method === "POST" && url.pathname === "/api/storyboard") {
+      const input = await readRequestJson(req);
+      return sendJson(res, 200, { storyboard: createWorkflow(input).storyboard });
     }
 
     const connectorMatch = url.pathname.match(/^\/api\/connectors\/([^/]+)$/);

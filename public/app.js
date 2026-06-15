@@ -19,6 +19,7 @@ const elements = {
   workflowMap: document.querySelector("#workflowMap"),
   connectorGrid: document.querySelector("#connectorGrid"),
   costCard: document.querySelector("#costCard"),
+  storyboardPreview: document.querySelector("#storyboardPreview"),
   reviewGrid: document.querySelector("#reviewGrid"),
   serviceList: document.querySelector("#serviceList"),
   projectSelect: document.querySelector("#projectSelect"),
@@ -98,7 +99,9 @@ function renderJobs() {
       job.workflow.sceneEngine.name,
       job.workflow.voiceProvider.name,
       job.workflow.videoProvider.name,
-      job.workflow.assembly.name
+      job.workflow.assembly.name,
+      `${job.workflow.storyboard.scenes.length} scenes`,
+      job.workflow.storyboard.blender.render.engine
     ].map((item) => `<span>${escapeHtml(item)}</span>`).join("");
 
     node.querySelector(".job-meta").innerHTML = [
@@ -106,6 +109,7 @@ function renderJobs() {
       `Est. ${money(job.costEstimate.subtotal)}`,
       job.worker ? `Worker ${job.worker}` : "Waiting for worker",
       job.workflow.characterVoice,
+      job.workflow.storyboard.blender.cameraMove,
       job.storageKey ? "MP4 stored in R2" : "No final MP4 yet",
       job.tiktokDraftId ? `TikTok ${job.tiktokDraftId}` : "TikTok draft pending"
     ].map((item) => `<span>${escapeHtml(item)}</span>`).join("");
@@ -176,6 +180,10 @@ function renderCostCard() {
   `;
 }
 
+function renderStoryboardPreview(storyboard) {
+  elements.storyboardPreview.textContent = JSON.stringify(storyboard || {}, null, 2);
+}
+
 function renderReview() {
   const reviewJobs = state.jobs.filter((job) => ["awaiting_review", "approved", "uploading_to_tiktok", "draft_created"].includes(job.status));
   elements.reviewGrid.innerHTML = reviewJobs.map((job) => `
@@ -230,12 +238,19 @@ async function approveJob(jobId) {
 
 async function updateEstimate() {
   const data = Object.fromEntries(new FormData(elements.jobForm));
-  const payload = await api("/api/estimate", {
-    method: "POST",
-    body: JSON.stringify(data)
-  });
-  state.currentEstimate = payload.estimate;
+  const [estimatePayload, storyboardPayload] = await Promise.all([
+    api("/api/estimate", {
+      method: "POST",
+      body: JSON.stringify(data)
+    }),
+    api("/api/storyboard", {
+      method: "POST",
+      body: JSON.stringify(data)
+    })
+  ]);
+  state.currentEstimate = estimatePayload.estimate;
   renderCostCard();
+  renderStoryboardPreview(storyboardPayload.storyboard);
 }
 
 async function connectProvider(form) {

@@ -15,6 +15,7 @@
         </div>
         <nav>
           <a class="active" href="#overview">Overview</a>
+          <a href="#scene">Scene</a>
           <a href="#queue">Queue</a>
           <a href="#workflow">Workflow</a>
           <a href="#connectors">Connectors</a>
@@ -54,6 +55,200 @@
 
         <section class="workspace">
           <div class="main-column">
+            <section class="panel" id="scene">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Prompt to storyboard JSON</p>
+                  <h2>Scene creation</h2>
+                </div>
+                <span class="live-pill">Blender-ready</span>
+              </div>
+              <div class="scene-builder">
+                <div class="scene-field-grid">
+                  <label>
+                    Core prompt
+                    <textarea form="jobForm" name="prompt">Create a premium cinematic 3D product reveal with a stunning studio background, elegant camera movement, character voiceover, captions, and a clean TikTok-ready ending.</textarea>
+                  </label>
+                  <label>
+                    Primary subject
+                    <input form="jobForm" name="primarySubject" value="matte black reusable water bottle" />
+                  </label>
+                  <label>
+                    Meshy asset prompt
+                    <textarea form="jobForm" name="assetPrompt">sleek matte black reusable water bottle, premium bevels, realistic cap, clean production-ready 3D model, high quality PBR material</textarea>
+                  </label>
+                  <label>
+                    Background / world
+                    <textarea form="jobForm" name="backgroundPrompt">minimal premium studio with glossy floor, soft vertical light panels, subtle depth haze, tasteful reflections, product-safe negative space</textarea>
+                  </label>
+                </div>
+
+                <div class="scene-controls">
+                  <label>
+                    Visual style
+                    <select form="jobForm" name="visualStyle">
+                      <option value="cinematic_product">Cinematic product reveal</option>
+                      <option value="futuristic_studio">Futuristic studio</option>
+                      <option value="luxury_minimal">Luxury minimal</option>
+                      <option value="playful_social">Playful social ad</option>
+                      <option value="warm_lifestyle">Warm lifestyle scene</option>
+                    </select>
+                  </label>
+                  <label>
+                    Mood
+                    <select form="jobForm" name="sceneMood">
+                      <option value="premium">Premium and polished</option>
+                      <option value="energetic">Energetic and fast</option>
+                      <option value="calm">Calm and elegant</option>
+                      <option value="dramatic">Dramatic reveal</option>
+                      <option value="playful">Playful and bright</option>
+                    </select>
+                  </label>
+                  <label>
+                    Scene count
+                    <input form="jobForm" name="sceneCount" type="number" min="1" max="6" value="3" />
+                  </label>
+                  <label>
+                    Format
+                    <select form="jobForm" name="format">
+                      <option value="9:16">9:16 TikTok/Reels</option>
+                      <option value="1:1">1:1 Square</option>
+                      <option value="16:9">16:9 Landscape</option>
+                    </select>
+                  </label>
+                  <label>
+                    Resolution
+                    <select form="jobForm" name="resolution">
+                      <option value="1080x1920">1080x1920</option>
+                      <option value="1440x2560">1440x2560</option>
+                      <option value="2160x3840">2160x3840</option>
+                    </select>
+                  </label>
+                  <label>
+                    FPS
+                    <select form="jobForm" name="fps">
+                      <option value="30">30 fps</option>
+                      <option value="24">24 fps</option>
+                      <option value="60">60 fps</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div class="scene-controls">
+                  <label>
+                    Scene template
+                    <select form="jobForm" name="sceneTemplate">
+                      <option value="studio_turntable_reveal">Studio turntable reveal</option>
+                      <option value="floating_gallery">Floating gallery</option>
+                      <option value="kinetic_feature_breakdown">Kinetic feature breakdown</option>
+                      <option value="environmental_lifestyle">Environmental lifestyle</option>
+                    </select>
+                  </label>
+                  <label>
+                    Camera move
+                    <select form="jobForm" name="cameraMove">
+                      <option value="slow dolly-in with orbit reveal">Slow dolly-in with orbit reveal</option>
+                      <option value="crane down into macro detail">Crane down into macro detail</option>
+                      <option value="fast whip-pan between feature angles">Fast whip-pan between feature angles</option>
+                      <option value="parallax side track with hero lockup">Parallax side track with hero lockup</option>
+                    </select>
+                  </label>
+                  <label>
+                    Camera lens
+                    <select form="jobForm" name="cameraLens">
+                      <option value="50mm cinematic product lens">50mm cinematic product lens</option>
+                      <option value="35mm energetic social lens">35mm energetic social lens</option>
+                      <option value="85mm premium macro lens">85mm premium macro lens</option>
+                    </select>
+                  </label>
+                  <label>
+                    Lighting setup
+                    <select form="jobForm" name="lightingSetup">
+                      <option value="large softbox key, rim light, controlled fill, contact shadows">Softbox key + rim + contact shadows</option>
+                      <option value="dramatic side key, neon rim, glossy reflections">Dramatic neon rim</option>
+                      <option value="high-key commercial lighting, clean white reflections">High-key commercial</option>
+                      <option value="warm lifestyle key, practical background glow, soft shadows">Warm lifestyle</option>
+                    </select>
+                  </label>
+                  <label>
+                    Atmosphere
+                    <input form="jobForm" name="atmosphere" value="subtle volumetric haze and glossy floor reflections" />
+                  </label>
+                  <label>
+                    Material style
+                    <input form="jobForm" name="materialStyle" value="brushed premium material with subtle bevels" />
+                  </label>
+                </div>
+
+                <div class="scene-controls">
+                  <label>
+                    Subject motion
+                    <input form="jobForm" name="subjectMotion" value="slow 360 turntable with gentle scale emphasis on reveal beats" />
+                  </label>
+                  <label>
+                    Background motion
+                    <input form="jobForm" name="backgroundMotion" value="slow parallax panels and light sweep" />
+                  </label>
+                  <label>
+                    Transition style
+                    <input form="jobForm" name="transitionStyle" value="match cuts with motion blur and clean light wipes" />
+                  </label>
+                  <label>
+                    Render engine
+                    <select form="jobForm" name="renderEngine">
+                      <option value="Cycles">Cycles</option>
+                      <option value="Eevee Next">Eevee Next</option>
+                    </select>
+                  </label>
+                  <label>
+                    Samples
+                    <input form="jobForm" name="samples" type="number" min="32" max="1024" value="128" />
+                  </label>
+                  <label>
+                    Color management
+                    <input form="jobForm" name="colorManagement" value="Filmic high contrast look" />
+                  </label>
+                </div>
+
+                <div class="scene-field-grid">
+                  <label>
+                    Voice script
+                    <textarea form="jobForm" name="voiceText">Meet the bottle designed for everyday creators. Clean design, premium feel, and made to move with you.</textarea>
+                  </label>
+                  <label>
+                    Voice direction
+                    <input form="jobForm" name="voiceDirection" value="confident, warm, creator-friendly, natural pacing" />
+                  </label>
+                  <label>
+                    CTA line
+                    <input form="jobForm" name="ctaText" value="Ready to make it yours?" />
+                  </label>
+                  <label>
+                    Caption style
+                    <input form="jobForm" name="captionStyle" value="bold lower-third captions with safe margins" />
+                  </label>
+                  <label>
+                    Music prompt
+                    <input form="jobForm" name="musicPrompt" value="upbeat minimal electronic bed" />
+                  </label>
+                  <label>
+                    Negative prompt
+                    <textarea form="jobForm" name="negativePrompt">low quality, warped text, broken geometry, flicker, cluttered scene, bad reflections, unreadable captions</textarea>
+                  </label>
+                </div>
+
+                <div class="json-preview-wrap">
+                  <div class="section-heading compact">
+                    <div>
+                      <p class="eyebrow">Approved handoff</p>
+                      <h2>Storyboard JSON</h2>
+                    </div>
+                  </div>
+                  <pre class="json-preview" id="storyboardPreview">{}</pre>
+                </div>
+              </div>
+            </section>
+
             <section class="panel" id="queue">
               <div class="section-heading">
                 <div>
