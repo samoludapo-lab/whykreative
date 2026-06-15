@@ -72,7 +72,7 @@ function renderMetrics() {
 function renderProjects() {
   const selected = elements.projectSelect.value;
   elements.projectSelect.innerHTML = state.projects
-    .map((project) => `<option value="${project.id}">${project.title}</option>`)
+    .map((project) => `<option value="${escapeHtml(project.id)}">${escapeHtml(project.title)}</option>`)
     .join("");
   if (selected) elements.projectSelect.value = selected;
 }
