@@ -50,3 +50,27 @@ This prototype uses in-memory data so it can run with no external services. The 
 ## Setup Guide
 
 See [SETUP.md](./SETUP.md) for app locations, GitHub push steps, token troubleshooting, and production integration notes.
+
+## Production Structure
+
+The backend is split into production-oriented modules:
+
+```text
+src/config       environment validation
+src/http         request/response/error helpers
+src/routes       API and static routes
+src/services     workflow, costs, connectors, app service
+src/repositories in-memory repository, replace with PostgreSQL
+src/adapters     provider/worker adapter boundaries
+docs             schema and architecture notes
+deploy           Docker Compose for app/Postgres/Redis
+```
+
+Health endpoints:
+
+```text
+GET /healthz
+GET /readyz
+```
+
+The app is still using an in-memory repository and simulated render worker. See [docs/production-architecture.md](./docs/production-architecture.md) for the replacement path to PostgreSQL, Redis, S3/R2, and real provider APIs.

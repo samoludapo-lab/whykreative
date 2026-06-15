@@ -33,6 +33,50 @@ Open:
 http://127.0.0.1:3000
 ```
 
+Run syntax checks:
+
+```bash
+npm run check
+```
+
+## Production Configuration
+
+Copy the environment template:
+
+```bash
+cp .env.example .env
+```
+
+Important production variables:
+
+```text
+DATABASE_URL
+REDIS_URL
+SESSION_SECRET
+S3_ENDPOINT
+S3_BUCKET
+S3_ACCESS_KEY_ID
+S3_SECRET_ACCESS_KEY
+MESHY_API_KEY
+ELEVENLABS_API_KEY
+TIKTOK_CLIENT_ID
+TIKTOK_CLIENT_SECRET
+```
+
+Run with Docker Compose:
+
+```bash
+cd deploy
+docker compose up --build
+```
+
+Health checks:
+
+```text
+GET /healthz
+GET /readyz
+```
+
 ## What The Prototype Does
 
 This is a local prototype of the pipeline:
