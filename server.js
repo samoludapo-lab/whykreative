@@ -10,8 +10,12 @@ const host = process.env.HOST || "127.0.0.1";
 
 const statusOrder = [
   "queued",
-  "rendering",
-  "postprocessing",
+  "scripting",
+  "generating_assets",
+  "building_scene",
+  "generating_voice",
+  "generating_video",
+  "compositing",
   "stored",
   "awaiting_review",
   "approved",
@@ -21,8 +25,12 @@ const statusOrder = [
 
 const statusLabels = {
   queued: "Queued",
-  rendering: "Rendering",
-  postprocessing: "Postprocessing",
+  scripting: "Script",
+  generating_assets: "3D assets",
+  building_scene: "Blender",
+  generating_voice: "Voice",
+  generating_video: "AI video",
+  compositing: "FFmpeg",
   stored: "Stored",
   awaiting_review: "Awaiting review",
   approved: "Approved",
@@ -32,6 +40,80 @@ const statusLabels = {
 };
 
 const clients = new Set();
+
+const toolCatalog = {
+  assetProviders: [
+    { id: "meshy", name: "Meshy", detail: "Text/image to 3D assets, rigging, animation, retexture" },
+    { id: "tripo", name: "Tripo", detail: "Fast image to 3D and generated props" },
+    { id: "manual", name: "Uploaded assets", detail: "Use client-provided GLB, FBX, OBJ, or blend files" }
+  ],
+  sceneEngines: [
+    { id: "blender", name: "Blender Python", detail: "Deterministic 3D scene assembly, lighting, camera, render" }
+  ],
+  voiceProviders: [
+    { id: "elevenlabs", name: "ElevenLabs", detail: "Expressive character voices, dialogue, cloning/design" },
+    { id: "cartesia", name: "Cartesia", detail: "Low-latency character voices and realtime voice" }
+  ],
+  videoProviders: [
+    { id: "runway", name: "Runway", detail: "Reference-based cinematic AI video inserts" },
+    { id: "luma", name: "Luma Dream Machine", detail: "Natural motion and short generative clips" },
+    { id: "none", name: "No AI insert", detail: "Pure Blender render" }
+  ],
+  assembly: [
+    { id: "ffmpeg", name: "FFmpeg", detail: "Captions, music, voice mix, encode, final MP4" }
+  ]
+};
+
+const characterPresets = {
+  narrator: "Warm narrator",
+  founder: "Founder / presenter",
+  customer: "Customer testimonial",
+  duo: "Two-character dialogue"
+};
+
+function findTool(group, id) {
+  return toolCatalog[group].find((tool) => tool.id === id) || toolCatalog[group][0];
+}
+
+function createWorkflow(input = {}) {
+  const assetProvider = findTool("assetProviders", input.assetProvider || "meshy");
+  const sceneEngine = findTool("sceneEngines", "blender");
+  const voiceProvider = findTool("voiceProviders", input.voiceProvider || "elevenlabs");
+  const videoProvider = findTool("videoProviders", input.videoProvider || "runway");
+  const characterVoice = characterPresets[input.characterVoice] || characterPresets.narrator;
+
+  return {
+    assetProvider,
+    sceneEngine,
+    voiceProvider,
+    videoProvider,
+    assembly: toolCatalog.assembly[0],
+    characterVoice,
+    brief: input.brief?.trim() || "Create a 9:16 TikTok-ready product video with voiceover.",
+    stages: statusOrder.map((status) => ({
+      status,
+      label: statusLabels[status],
+      tool: workflowToolLabel(status, { assetProvider, sceneEngine, voiceProvider, videoProvider })
+    }))
+  };
+}
+
+function workflowToolLabel(status, workflow) {
+  return {
+    queued: "API Server + Redis",
+    scripting: "Script planner",
+    generating_assets: workflow.assetProvider.name,
+    building_scene: workflow.sceneEngine.name,
+    generating_voice: workflow.voiceProvider.name,
+    generating_video: workflow.videoProvider.id === "none" ? "Skipped" : workflow.videoProvider.name,
+    compositing: "FFmpeg",
+    stored: "S3/R2",
+    awaiting_review: "Client dashboard",
+    approved: "Approval gate",
+    uploading_to_tiktok: "TikTok Upload API",
+    draft_created: "TikTok Draft Inbox"
+  }[status];
+}
 
 const db = {
   projects: [
@@ -68,17 +150,25 @@ const db = {
       updatedAt: new Date(Date.now() - 1000 * 60 * 9).toISOString(),
       logs: [
         "Queued from API server",
-        "Assets downloaded from R2",
-        "Blender render complete",
+        "Meshy generated product turntable asset",
+        "Blender Python rendered controlled camera move",
+        "ElevenLabs generated warm narrator voice",
         "FFmpeg vertical encode complete",
         "Final MP4 stored in R2"
-      ]
+      ],
+      workflow: createWorkflow({
+        assetProvider: "meshy",
+        voiceProvider: "elevenlabs",
+        videoProvider: "runway",
+        characterVoice: "narrator",
+        brief: "Launch video with a bottle spin, upbeat narrator, and cinematic AI background insert."
+      })
     },
     {
       id: "job-1028",
       projectId: "proj-cafe",
       title: "Grand opening espresso scene",
-      status: "rendering",
+      status: "building_scene",
       progress: 38,
       priority: "Normal",
       worker: "gpu-render-02",
@@ -91,7 +181,14 @@ const db = {
         "Queued from API server",
         "Render worker claimed job",
         "Blender Python scene assembly started"
-      ]
+      ],
+      workflow: createWorkflow({
+        assetProvider: "manual",
+        voiceProvider: "cartesia",
+        videoProvider: "luma",
+        characterVoice: "founder",
+        brief: "Cafe opening teaser with founder-style voice and warm storefront motion insert."
+      })
     }
   ]
 };
@@ -150,9 +247,15 @@ function dashboardPayload() {
       { name: "PostgreSQL", detail: "Projects, jobs, users, TikTok auth", status: "healthy" },
       { name: "S3/R2 Storage", detail: "Assets, thumbnails, final MP4", status: "healthy" },
       { name: "Redis Queue", detail: "Render and upload jobs", status: active.length ? "busy" : "healthy" },
-      { name: "GPU Worker", detail: "Blender, FFmpeg, AI voice", status: active.length ? "busy" : "idle" }
+      { name: "Meshy", detail: "3D asset generation and retexture", status: active.length ? "busy" : "idle" },
+      { name: "Blender Python", detail: "Scene assembly, lighting, camera, render", status: active.length ? "busy" : "idle" },
+      { name: "ElevenLabs / Cartesia", detail: "Character voices and dialogue", status: active.length ? "busy" : "idle" },
+      { name: "Runway / Luma", detail: "Optional generative video inserts", status: active.length ? "busy" : "idle" },
+      { name: "FFmpeg", detail: "Audio mix, captions, encode, final MP4", status: active.length ? "busy" : "idle" },
+      { name: "TikTok Upload API", detail: "Approved MP4 to creator draft inbox", status: "healthy" }
     ],
-    pipeline: statusOrder.map((status) => ({ status, label: statusLabels[status] }))
+    pipeline: statusOrder.map((status) => ({ status, label: statusLabels[status] })),
+    toolCatalog
   };
 }
 
@@ -175,11 +278,13 @@ function setJobStatus(job, status, progress, line) {
 function simulateRender(job) {
   if (jobTimers.has(job.id)) clearInterval(jobTimers.get(job.id));
   const steps = [
-    ["rendering", 22, "Render worker claimed job"],
-    ["rendering", 43, "Blender Python scene render in progress"],
-    ["postprocessing", 64, "FFmpeg encode and loudness pass started"],
-    ["postprocessing", 78, "AI voice mixed into timeline"],
-    ["stored", 92, "Final MP4 stored in R2"],
+    ["scripting", 14, "Script planner created shot list and dialogue beats"],
+    ["generating_assets", 27, `${job.workflow.assetProvider.name} prepared 3D assets`],
+    ["building_scene", 43, "Blender Python assembled scene, lights, camera path, and render settings"],
+    ["generating_voice", 58, `${job.workflow.voiceProvider.name} generated ${job.workflow.characterVoice} voice audio`],
+    ["generating_video", 70, job.workflow.videoProvider.id === "none" ? "AI video insert skipped for pure Blender render" : `${job.workflow.videoProvider.name} generated cinematic insert`],
+    ["compositing", 84, "FFmpeg mixed voice, captions, music, and vertical MP4 encode"],
+    ["stored", 94, "Final MP4 stored in R2"],
     ["awaiting_review", 100, "Ready for client review"]
   ];
   let index = 0;
@@ -211,7 +316,8 @@ function createJob(input) {
     tiktokDraftId: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    logs: ["Queued from API server"]
+    logs: ["Queued from API server"],
+    workflow: createWorkflow(input)
   };
   db.jobs.unshift(job);
   emit("dashboard", dashboardPayload());

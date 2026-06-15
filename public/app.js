@@ -3,7 +3,8 @@ const state = {
   jobs: [],
   stats: {},
   services: [],
-  pipeline: []
+  pipeline: [],
+  toolCatalog: {}
 };
 
 const elements = {
@@ -12,6 +13,7 @@ const elements = {
   draftsCreated: document.querySelector("#draftsCreated"),
   queueDepth: document.querySelector("#queueDepth"),
   jobList: document.querySelector("#jobList"),
+  workflowMap: document.querySelector("#workflowMap"),
   reviewGrid: document.querySelector("#reviewGrid"),
   serviceList: document.querySelector("#serviceList"),
   projectSelect: document.querySelector("#projectSelect"),
@@ -39,6 +41,15 @@ async function api(path, options = {}) {
 
 function statusClass(status) {
   return `status ${status}`;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 function renderMetrics() {
@@ -70,29 +81,53 @@ function renderJobs() {
 
     const rail = node.querySelector(".pipeline-rail");
     rail.innerHTML = state.pipeline
-      .map((step, index) => `<span class="pipeline-step ${index <= job.pipelineIndex ? "done" : ""}" title="${step.label}"></span>`)
+      .map((step, index) => `<span class="pipeline-step ${index <= job.pipelineIndex ? "done" : ""}" title="${escapeHtml(step.label)}"></span>`)
       .join("");
+
+    node.querySelector(".tool-strip").innerHTML = [
+      job.workflow.assetProvider.name,
+      job.workflow.sceneEngine.name,
+      job.workflow.voiceProvider.name,
+      job.workflow.videoProvider.name,
+      job.workflow.assembly.name
+    ].map((item) => `<span>${escapeHtml(item)}</span>`).join("");
 
     node.querySelector(".job-meta").innerHTML = [
       `Progress ${job.progress}%`,
       job.worker ? `Worker ${job.worker}` : "Waiting for worker",
+      job.workflow.characterVoice,
       job.storageKey ? "MP4 stored in R2" : "No final MP4 yet",
       job.tiktokDraftId ? `TikTok ${job.tiktokDraftId}` : "TikTok draft pending"
-    ].map((item) => `<span>${item}</span>`).join("");
+    ].map((item) => `<span>${escapeHtml(item)}</span>`).join("");
 
     elements.jobList.append(node);
   });
+}
+
+function renderWorkflowMap() {
+  const sampleJob = state.jobs[0];
+  const stages = sampleJob?.workflow?.stages || state.pipeline.map((step) => ({ ...step, tool: "" }));
+
+  elements.workflowMap.innerHTML = stages.map((stage, index) => `
+    <article class="workflow-step ${sampleJob && index <= sampleJob.pipelineIndex ? "done" : ""}">
+      <span>${index + 1}</span>
+      <div>
+        <strong>${escapeHtml(stage.label)}</strong>
+        <p>${escapeHtml(stage.tool)}</p>
+      </div>
+    </article>
+  `).join("");
 }
 
 function renderReview() {
   const reviewJobs = state.jobs.filter((job) => ["awaiting_review", "approved", "uploading_to_tiktok", "draft_created"].includes(job.status));
   elements.reviewGrid.innerHTML = reviewJobs.map((job) => `
     <article class="review-card">
-      <div class="video-thumb">${job.project.title.slice(0, 1)}</div>
+      <div class="video-thumb">${escapeHtml(job.project.title.slice(0, 1))}</div>
       <div class="review-body">
-        <span class="${statusClass(job.status)}">${job.statusLabel}</span>
-        <h3>${job.title}</h3>
-        <p>${job.storageKey || "Final MP4 is being prepared"}</p>
+        <span class="${statusClass(job.status)}">${escapeHtml(job.statusLabel)}</span>
+        <h3>${escapeHtml(job.title)}</h3>
+        <p>${escapeHtml(job.workflow.characterVoice)} via ${escapeHtml(job.workflow.voiceProvider.name)} · ${escapeHtml(job.storageKey || "Final MP4 is being prepared")}</p>
         <button class="ghost-button" type="button" data-approve="${job.id}" ${job.status !== "awaiting_review" ? "disabled" : ""}>
           ${job.status === "awaiting_review" ? "Approve to TikTok draft" : "Approval sent"}
         </button>
@@ -117,6 +152,7 @@ function render() {
   renderMetrics();
   renderProjects();
   renderJobs();
+  renderWorkflowMap();
   renderReview();
   renderServices();
 }

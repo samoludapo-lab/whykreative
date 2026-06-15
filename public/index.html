@@ -16,6 +16,7 @@
         <nav>
           <a class="active" href="#overview">Overview</a>
           <a href="#queue">Queue</a>
+          <a href="#workflow">Workflow</a>
           <a href="#review">Review</a>
           <a href="#services">Services</a>
         </nav>
@@ -62,6 +63,16 @@
               <div class="job-list" id="jobList"></div>
             </section>
 
+            <section class="panel" id="workflow">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">AI production stack</p>
+                  <h2>Workflow builder</h2>
+                </div>
+              </div>
+              <div class="workflow-map" id="workflowMap"></div>
+            </section>
+
             <section class="panel" id="review">
               <div class="section-heading">
                 <div>
@@ -89,6 +100,42 @@
                 <label>
                   Render title
                   <input name="title" value="Product reveal with AI voiceover" />
+                </label>
+                <label>
+                  Creative brief
+                  <textarea name="brief">Create a 9:16 TikTok-ready product video with a generated 3D hero asset, character voiceover, captions, and a cinematic AI insert.</textarea>
+                </label>
+                <label>
+                  3D assets
+                  <select name="assetProvider">
+                    <option value="meshy">Meshy text/image to 3D</option>
+                    <option value="tripo">Tripo image to 3D</option>
+                    <option value="manual">Uploaded client assets</option>
+                  </select>
+                </label>
+                <label>
+                  Character voice
+                  <select name="voiceProvider">
+                    <option value="elevenlabs">ElevenLabs</option>
+                    <option value="cartesia">Cartesia</option>
+                  </select>
+                </label>
+                <label>
+                  Voice role
+                  <select name="characterVoice">
+                    <option value="narrator">Warm narrator</option>
+                    <option value="founder">Founder / presenter</option>
+                    <option value="customer">Customer testimonial</option>
+                    <option value="duo">Two-character dialogue</option>
+                  </select>
+                </label>
+                <label>
+                  AI video insert
+                  <select name="videoProvider">
+                    <option value="runway">Runway cinematic insert</option>
+                    <option value="luma">Luma Dream Machine motion</option>
+                    <option value="none">No AI insert</option>
+                  </select>
                 </label>
                 <label>
                   Priority
@@ -126,6 +173,7 @@
           <span class="status"></span>
         </div>
         <div class="pipeline-rail"></div>
+        <div class="tool-strip"></div>
         <div class="job-meta"></div>
       </article>
     </template>

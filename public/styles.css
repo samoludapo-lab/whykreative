@@ -239,8 +239,12 @@ label {
   color: #2e3833;
 }
 
-.status.rendering,
-.status.postprocessing,
+.status.scripting,
+.status.generating_assets,
+.status.building_scene,
+.status.generating_voice,
+.status.generating_video,
+.status.compositing,
 .status.uploading_to_tiktok {
   background: #e8f2f8;
   color: var(--blue);
@@ -271,7 +275,7 @@ label {
 
 .pipeline-rail {
   display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 5px;
   margin: 16px 0 12px;
 }
@@ -291,6 +295,74 @@ label {
   flex-wrap: wrap;
   gap: 10px 14px;
   font-size: 0.84rem;
+}
+
+.tool-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0 0 12px;
+}
+
+.tool-strip span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  border-radius: 999px;
+  background: #f3f7f4;
+  border: 1px solid var(--line);
+  color: #304239;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0 10px;
+}
+
+.workflow-map {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.workflow-step {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  min-height: 94px;
+  background: #fbfcfb;
+}
+
+.workflow-step > span {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: #e6ebe7;
+  color: var(--muted);
+  font-weight: 900;
+  font-size: 0.82rem;
+}
+
+.workflow-step.done > span {
+  background: var(--green);
+  color: #fff;
+}
+
+.workflow-step strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.88rem;
+}
+
+.workflow-step p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.3;
 }
 
 .review-grid {
@@ -347,7 +419,8 @@ label {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
   min-height: 42px;
   border: 1px solid var(--line);
@@ -355,6 +428,13 @@ select {
   padding: 0 11px;
   color: var(--ink);
   background: #fff;
+}
+
+textarea {
+  min-height: 104px;
+  resize: vertical;
+  padding: 10px 11px;
+  line-height: 1.4;
 }
 
 .service-list {
@@ -436,6 +516,6 @@ select {
   }
 
   .pipeline-rail {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }

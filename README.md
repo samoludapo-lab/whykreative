@@ -25,6 +25,7 @@ http://127.0.0.1:3000
 - Dashboard UI for render jobs, client review, queue state, and service health.
 - Node API server with endpoints for dashboard data, render job creation, and approval.
 - Simulated Redis queue and GPU render worker lifecycle.
+- AI workflow choices for 3D assets, Blender rendering, character voices, AI video inserts, and FFmpeg assembly.
 - Live updates with Server-Sent Events.
 - TikTok draft creation flow after client approval.
 
@@ -38,3 +39,7 @@ POST /api/jobs/:id/approve
 ```
 
 This prototype uses in-memory data so it can run with no external services. The data model and status lifecycle are shaped for later replacement with PostgreSQL, Redis, and S3/R2 integrations.
+
+## Setup Guide
+
+See [SETUP.md](./SETUP.md) for app locations, GitHub push steps, token troubleshooting, and production integration notes.
