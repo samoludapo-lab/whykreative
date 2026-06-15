@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Render Pipeline Dashboard</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Primary navigation">
+        <div class="brand">
+          <span class="brand-mark">R</span>
+          <span>RenderOps</span>
+        </div>
+        <nav>
+          <a class="active" href="#overview">Overview</a>
+          <a href="#queue">Queue</a>
+          <a href="#review">Review</a>
+          <a href="#services">Services</a>
+        </nav>
+      </aside>
+
+      <main>
+        <section class="topbar" id="overview">
+          <div>
+            <p class="eyebrow">Client dashboard</p>
+            <h1>Video render operations</h1>
+          </div>
+          <button class="primary-button" id="quickJobButton" type="button">New render job</button>
+        </section>
+
+        <section class="metrics" aria-label="Pipeline metrics">
+          <article>
+            <span>Active jobs</span>
+            <strong id="activeJobs">0</strong>
+          </article>
+          <article>
+            <span>Awaiting review</span>
+            <strong id="awaitingReview">0</strong>
+          </article>
+          <article>
+            <span>TikTok drafts</span>
+            <strong id="draftsCreated">0</strong>
+          </article>
+          <article>
+            <span>Queue depth</span>
+            <strong id="queueDepth">0</strong>
+          </article>
+        </section>
+
+        <section class="workspace">
+          <div class="main-column">
+            <section class="panel" id="queue">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Redis queue to GPU workers</p>
+                  <h2>Render queue</h2>
+                </div>
+                <span class="live-pill">Live</span>
+              </div>
+              <div class="job-list" id="jobList"></div>
+            </section>
+
+            <section class="panel" id="review">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Stored in S3/R2</p>
+                  <h2>Client review</h2>
+                </div>
+              </div>
+              <div class="review-grid" id="reviewGrid"></div>
+            </section>
+          </div>
+
+          <aside class="side-column">
+            <section class="panel create-panel">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">API server</p>
+                  <h2>Create job</h2>
+                </div>
+              </div>
+              <form id="jobForm">
+                <label>
+                  Project
+                  <select id="projectSelect" name="projectId"></select>
+                </label>
+                <label>
+                  Render title
+                  <input name="title" value="Product reveal with AI voiceover" />
+                </label>
+                <label>
+                  Priority
+                  <select name="priority">
+                    <option>Normal</option>
+                    <option>High</option>
+                    <option>Rush</option>
+                  </select>
+                </label>
+                <button class="primary-button full" type="submit">Queue render</button>
+              </form>
+            </section>
+
+            <section class="panel" id="services">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Infrastructure</p>
+                  <h2>Services</h2>
+                </div>
+              </div>
+              <div class="service-list" id="serviceList"></div>
+            </section>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <template id="jobTemplate">
+      <article class="job-card">
+        <div class="job-card-header">
+          <div>
+            <h3></h3>
+            <p></p>
+          </div>
+          <span class="status"></span>
+        </div>
+        <div class="pipeline-rail"></div>
+        <div class="job-meta"></div>
+      </article>
+    </template>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
