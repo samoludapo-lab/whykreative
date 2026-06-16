@@ -51,6 +51,8 @@ This prototype uses in-memory data so it can run with no external services. The 
 
 See [SETUP.md](./SETUP.md) for app locations, GitHub push steps, token troubleshooting, and production integration notes.
 
+For cloud hosting steps, see [docs/deployment-guide.md](./docs/deployment-guide.md).
+
 ## Production Structure
 
 The backend is split into production-oriented modules:

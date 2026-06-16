@@ -70,6 +70,12 @@ cd deploy
 docker compose up --build
 ```
 
+Cloud deployment guide:
+
+```text
+docs/deployment-guide.md
+```
+
 Health checks:
 
 ```text
