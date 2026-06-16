@@ -52,6 +52,30 @@ TIKTOK_CLIENT_ID=...
 TIKTOK_CLIENT_SECRET=...
 ```
 
+## Quick Demo Deploy Without Database
+
+For the very first Render deploy, you can start the dashboard before creating PostgreSQL, Redis, and R2.
+
+Set only these Render environment variables:
+
+```text
+NODE_ENV=production
+HOST=0.0.0.0
+PORT=3000
+ALLOW_MEMORY_MODE=true
+APP_BASE_URL=https://your-render-url.onrender.com
+```
+
+This runs the app in temporary memory mode. It is useful for confirming the dashboard is live, but it is not real production storage. Jobs and connector state reset whenever the service restarts.
+
+When you are ready for real production, set:
+
+```text
+ALLOW_MEMORY_MODE=false
+```
+
+Then add PostgreSQL, Redis, R2/S3, and the required environment variables above.
+
 ## Render Deployment
 
 Render is the simplest first production host for this app.
@@ -62,7 +86,7 @@ Render is the simplest first production host for this app.
 4. Set the health check path to `/healthz`.
 5. Add a managed Postgres database.
 6. Add Redis/Valkey.
-7. Add the environment variables above.
+7. Add the environment variables above, or use `ALLOW_MEMORY_MODE=true` for the first demo deploy.
 8. Deploy.
 
 After deploy, check:
@@ -129,4 +153,3 @@ It should:
 ## Production Notes
 
 The current app still uses in-memory storage and simulated rendering. The deploy will run, but real production behavior needs the Postgres repository, Redis queue, storage adapter, provider adapters, auth, billing/rate limits, and TikTok OAuth implementation.
-

@@ -50,6 +50,7 @@ cp .env.example .env
 Important production variables:
 
 ```text
+ALLOW_MEMORY_MODE
 DATABASE_URL
 REDIS_URL
 SESSION_SECRET
@@ -62,6 +63,8 @@ ELEVENLABS_API_KEY
 TIKTOK_CLIENT_ID
 TIKTOK_CLIENT_SECRET
 ```
+
+For a first cloud demo without managed services, set `ALLOW_MEMORY_MODE=true`. Turn it off before real production because memory mode resets data on restart.
 
 Run with Docker Compose:
 

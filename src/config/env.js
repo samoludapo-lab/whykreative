@@ -3,7 +3,8 @@ const DEFAULTS = {
   HOST: "127.0.0.1",
   PORT: "3000",
   MAX_JSON_BYTES: "65536",
-  APP_BASE_URL: "http://127.0.0.1:3000"
+  APP_BASE_URL: "http://127.0.0.1:3000",
+  ALLOW_MEMORY_MODE: "false"
 };
 
 const REQUIRED_IN_PRODUCTION = [
@@ -25,6 +26,7 @@ export function loadEnv(source = process.env) {
     port: toInt(env.PORT, 3000),
     maxJsonBytes: toInt(env.MAX_JSON_BYTES, 65536),
     appBaseUrl: env.APP_BASE_URL,
+    allowMemoryMode: env.ALLOW_MEMORY_MODE === "true",
     databaseUrl: env.DATABASE_URL || "",
     redisUrl: env.REDIS_URL || "",
     sessionSecret: env.SESSION_SECRET || "",
@@ -53,6 +55,7 @@ export function loadEnv(source = process.env) {
 
 function validateEnv(config) {
   if (!config.isProduction) return;
+  if (config.allowMemoryMode) return;
   const missing = REQUIRED_IN_PRODUCTION.filter((key) => !process.env[key]);
   if (missing.length) {
     throw new Error(`Missing required production environment variables: ${missing.join(", ")}`);
